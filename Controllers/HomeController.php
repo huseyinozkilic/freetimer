@@ -24,9 +24,11 @@ class HomeController
         header('Content-Type: application/json; charset=utf-8');
 
         $dimensions = $calculator->setDimensions($input->width, $input->length);
-        $bags = Calculator::calculateBags($dimensions);
-        $price = Calculator::calculatePrice($bags);
+        $measurement = $calculator->setMeasurementUnit($input->measurementunit);
+        $depthmeasurementunit = $calculator->setDepthMeasurementUnit($input->depthmeasurementunit);
 
+        $bags = $calculator->calculateBags();
+        $price = $calculator->calculatePrice();
         $prep = [
             'width' => $input->width,
             'length' => $input->length,
@@ -35,17 +37,16 @@ class HomeController
             'bags' => $bags,
             'price' => $price,
         ];
+
         $insert = $calculator->saveToDb($prep);
 
-        if($insert){
-            $db = new \mysqli('localhost', 'freetimer', 'freetimer', 'freetimer');
-            $insert = $db->query("SELECT LAST_INSERT_ID() AS inserted_id");
+        if(!is_null($insert)){
             $this->json['result'] = 'success';
             $this->json['totals'] = [
                 'bags' => $bags,
                 'price' => $price,
             ];
-            $this->json['insert_id'] = $insert->fetch_object()->inserted_id;
+            $this->json['insert_id'] = $insert;
         }else{
             $this->json['result'] = 'error';
             $this->json['status'] = 200;

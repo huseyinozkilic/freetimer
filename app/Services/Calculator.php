@@ -22,6 +22,12 @@ class Calculator
         return $this->depthMeasurementUnit;
     }
 
+    public function setBags($bags)
+    {
+        $this->bags = $bags;
+        return $this->bags;
+    }
+
     public function setDimensions($width, $length, $depth=1.4)
     {
         $this->dimensions = [
@@ -33,17 +39,19 @@ class Calculator
         return $this->dimensions;
     }
 
-    public static function calculateBags($args = [])
+    public function calculateBags()
     {
-        $x = $args['width'] * $args['length'] * 0.025;
-        $y = $args['depth'] * $x;
+        $x = $this->dimensions['width'] * $this->dimensions['length'] * 0.025;
+        $y = $this->dimensions['depth'] * $x;
+
+        $this->setBags($y);
 
         return ceil($y);
     }
 
-    public static function calculatePrice($bags)
+    public function calculatePrice()
     {
-        $x = $bags * 72;
+        $x = $this->bags * 72;
 
         return $x;
     }
@@ -51,6 +59,13 @@ class Calculator
     public function saveToDb($args = []){
         $db = new \mysqli('localhost', 'freetimer', 'freetimer', 'freetimer');
 
-        return $db->query("INSERT INTO collection (width, length, measurement, depthmeasurement, bags, price) VALUES (" . $args['width'] . ", " . $args['length'] . ", '" . $args['meauserement'] . "', '" . $args['depthmeauserement'] . "', " . $args['bags'] . ", " . $args['price'] . ")");
+        $insert = $db->query("INSERT INTO collection (width, length, measurement, depthmeasurement, bags, price) VALUES (" . $args['width'] . ", " . $args['length'] . ", '" . $args['meauserement'] . "', '" . $args['depthmeauserement'] . "', " . $args['bags'] . ", " . $args['price'] . ")");
+
+        if($insert){
+            $insert = $db->query("SELECT LAST_INSERT_ID() AS inserted_id");
+            return $insert->fetch_object()->inserted_id;
+        }else{
+            return null;
+        }
     }
 }
