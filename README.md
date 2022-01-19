@@ -1,1 +1,1 @@
-# freetimer
+FreeTimer Garden App
